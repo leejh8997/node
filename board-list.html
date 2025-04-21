@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        table, tr, td, th{
+            border : 1px solid black;
+            border-collapse: collapse;
+            padding : 5px 10px;
+            text-align: center;
+        }
+        a {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <table>
+            <tr>
+                <th>선택</th>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+            </tr>
+            <tr v-for="item in list" :key="item.BOARDNO">
+                <td><input type="radio" :value="item.BOARDNO" v-model="selectedBoardNo" name="abc"></td>
+                <td>{{item.BOARDNO}}</td>
+                <td><a @click="fnGetInfo(item.BOARDNO)">{{item.TITLE}}</a></td>
+                <td>{{item.USERID}}</td>
+            </tr>
+        </table>
+        <button @click="fnDelete(selectedBoardNo)">삭제</button>
+        <hr>
+        <div v-if="Info">
+            <h3>게시글 내용</h3>
+            <p>{{ Info }}</p>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+
+    const app = Vue.createApp({
+        data() {
+            return {
+                list : [],
+                Info : '',
+                selectedBoardNo: ''
+            };
+        },
+        methods: {
+            fnGetList() {
+                let self = this;
+                fetch('http://localhost:3000/board/list')
+                    .then(res => res.json())
+                    .then(data => {
+                        self.list = data.list;
+                        console.log(self.list);
+                    })
+                    .catch(error => {
+                        console.error('에러 발생:', error);
+                    });
+            },
+            fnGetInfo(boardNo){
+                let self = this;
+                fetch(`http://localhost:3000/board/view/${boardNo}`)
+                // fetch('http://localhost:3000/board/view?boardNo='+boardNo)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        self.Info = data.Info;
+                        console.log(self.Info);
+                    })
+                    .catch(error => {
+                        console.error('에러 발생:', error);
+                    });
+            },
+            fnDelete(boardNo){
+                let self = this;
+                console.log(boardNo);
+                fetch(`http://localhost:3000/board/delete/${boardNo}`)
+                // fetch('http://localhost:3000/board/delete?boardNo='+boardNo)
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.result == 'success'){
+                            console.log("데이터가 삭제되었습니다.");
+                            self.fnGetList();
+                        }else{
+                            console.log("데이터 삭제에 실패했습니다.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('에러 발생:', error);
+                    });
+            }
+        },
+        mounted() {
+            var self = this;
+            self.fnGetList();
+        }
+    });
+
+    app.mount('#app');
+
+
+</script>
