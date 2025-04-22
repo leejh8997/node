@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app">
+            <div>제품명 : <input placeholder="제품명" v-model="Info.productName"></div>
+            <div>제품설명 : <input placeholder="제품설명" v-model="Info.description"></div>
+            <div>가격 : <input placeholder="가격" v-model="Info.price"></div>
+            <div>재고 : <input placeholder="재고" v-model="Info.stock"></div>
+            <div>종류 : <input placeholder="종류" v-model="Info.category"></div>
+            <div v-if="productId != null && productId != ''"><button @click="fnEdit">수정</button></div>
+            <div v-else><button @click="fnAdd">등록</button></div>
+            <div><button @click="fnBack">돌아가기</button></div>
+    </div>
+</body>
+
+</html>
+<script>
+
+    const app = Vue.createApp({
+        data() {
+            return {
+                Info: {
+                    productName: '',
+                    description: '',
+                    price: '',
+                    stock: '',
+                    category: ''
+                },
+                productId: '',
+            };
+        },
+        methods: {
+            fnAdd() {
+                let self = this;
+                fetch('http://localhost:3000/product', {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(self.Info)
+                })
+                    // fetch('http://localhost:3000/board/view?boardNo='+boardNo)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.result == 'success') {
+                            alert("상품을 등록했습니다.");
+                        } else {
+                            alert("상품 등록에 실패했습니다.")
+                        }
+                    })
+                    .catch(err => {
+                        console.error('에러 발생:', err);
+                    });
+            },
+            fnEdit() {
+                let self = this;
+                fetch('http://localhost:3000/product/' + self.productId, {
+                    method: "PUT",
+                    headers: {
+                        "Content-type": "application/json"
+                    },
+                    body: JSON.stringify(self.Info)
+                })
+                    // fetch('http://localhost:3000/board/view?boardNo='+boardNo)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.result == 'success') {
+                            alert("상품을 수정했습니다.");
+                            location.href="product-list.html"
+                        } else {
+                            alert("상품 수정에 실패했습니다.")
+                        }
+                    })
+                    .catch(err => {
+                        console.error('에러 발생:', err);
+                    });
+            },
+            fnBack() {
+                location.href = "http://localhost:5501/day3/product-list.html";
+            },
+            fnGetInfo() {
+                let self = this;
+                fetch('http://localhost:3000/product/' + self.productId)
+                    // fetch('http://localhost:3000/board/view?boardNo='+boardNo)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        self.Info = data.Info;
+                        console.log(self.Info);
+                    })
+                    .catch(error => {
+                        console.error('에러 발생:', error);
+                    });
+            },
+        },
+        mounted() {
+            var self = this;
+            const urlParams = new URLSearchParams(window.location.search);
+            self.productId = urlParams.get("productId");
+            console.log(self.productId)
+            if(self.productId != null){
+                self.fnGetInfo();
+            }
+        }
+    });
+
+    app.mount('#app');
+
+</script>
