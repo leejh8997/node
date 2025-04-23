@@ -17,7 +17,8 @@
         <div>가격 : <input v-model="info.price"></div>
         <div>재고 : <input v-model="info.stock"></div>
         <div>종류 : <input v-model="info.category"></div>
-        <div>업로드 : <input type="file" name="photos" multiple ref="fileInput"></div>
+        <!-- <div>업로드 : <input type="file" name="photos" multiple ref="fileInput"></div> -->
+        <div>파일업로드 : <input type="file" @change="fnFileChange"></div>
         <div>
             <button v-if="productId == ''" @click="fnAdd">등록</button>
             <button v-else @click="fnEdit">수정</button>
@@ -37,44 +38,96 @@
                     stock: "",
                     category: ""
                 },
-                productId: ""
+                productId: "",
+                selectedFile : ""
             };
         },
         methods: {
-            fnAdd() {
+            // fnAdd() {
+            //     let self = this;
+            //     const formData = new FormData();
+
+            //     // 파일 추가
+            //     const files = self.$refs.fileInput.files;
+            //     for (let i = 0; i < files.length; i++) {
+            //         formData.append("photos", files[i]);
+            //     }
+
+            //     // 텍스트 필드 추가
+            //     formData.append("productName", self.info.productName);
+            //     formData.append("description", self.info.description);
+            //     formData.append("price", self.info.price);
+            //     formData.append("stock", self.info.stock);
+            //     formData.append("category", self.info.category);
+            //     fetch("http://localhost:3000/product/upload", {
+            //         method: "POST",
+            //         body: formData
+            //     })
+            //         .then(res => res.json())
+            //         .then(data => {
+            //             console.log(data);
+            //             if(data.message){
+            //                 alert("등록되었습니다.");
+            //                 location.href="product-list.html";
+            //             } else {
+            //                 alert(data.message);
+            //             }
+            //         })
+            //         .catch(err => {
+            //             console.log("서버 에러");
+            //         })
+            // },
+            fnAdd(){
                 let self = this;
-                const formData = new FormData();
-
-                // 파일 추가
-                const files = self.$refs.fileInput.files;
-                for (let i = 0; i < files.length; i++) {
-                    formData.append("photos", files[i]);
-                }
-
-                // 텍스트 필드 추가
-                formData.append("productName", self.info.productName);
-                formData.append("description", self.info.description);
-                formData.append("price", self.info.price);
-                formData.append("stock", self.info.stock);
-                formData.append("category", self.info.category);
-                fetch("http://localhost:3000/product/upload", {
-                    method: "POST",
-                    body: formData
+				fetch("http://localhost:3000/product", {
+                    method : "POST",
+                    headers : {
+                        "Content-type" : "application/json"   
+                    },
+                    body : JSON.stringify(self.info)
                 })
-                    .then(res => res.json())
-                    .then(data => {
+                    .then( res => res.json() )
+                    .then( data => {
                         console.log(data);
-                        if(data.message){
+                        if (self.selectedFile) {
+                            self.fnUploadFile(data.result.insertId);
+                        } else if(data.message === 'success'){
                             alert("등록되었습니다.");
                             location.href="product-list.html";
-                        } else {
+                        } else{
                             alert(data.message);
                         }
-                    })
-                    .catch(err => {
+                        
+                    } )
+                    .catch( err => {
                         console.log("서버 에러");
                     })
             },
+            fnFileChange() {
+                let self = this;
+                self.selectedFile = event.target.files[0];
+            },
+            fnUploadFile(productId) {
+                let self = this;
+				const formData = new FormData();
+				formData.append("file", self.selectedFile); 
+                formData.append("productId", productId);
+				fetch("http://localhost:3000/product/upload", {
+					method: "POST",
+					body: formData
+				})
+				.then(res => res.json())
+				.then(data => {
+					console.log(data);
+                    if(data.message==='success'){
+                        alert("등록되었습니다.");
+                        location.href="product-list.html";
+                    }
+				})
+				.catch(err => {
+					console.error(err);
+				});
+			},
             fnGetInfo() {
                 let self = this;
                 fetch("http://localhost:3000/product/" + self.productId)

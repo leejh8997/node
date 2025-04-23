@@ -18,9 +18,10 @@
 	<div id="app">
 		<div>제품명 : {{info.productName}}</div>
         <div>제품설명 : {{info.description}}</div>
-        <div v-for="img in info.images">
+        <img :src="'http://localhost:3000/' + info.filePath">
+        <!-- <div v-for="img in info.images">
             <img :src="'http://localhost:3000/' + img.filePath">
-        </div>
+        </div> -->
 	</div>
 </body>
 </html>
