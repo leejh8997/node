@@ -1,63 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+	<meta charset="UTF-8">
+	<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+	<title>첫번째 페이지</title>
 </head>
-
+<style>
+    table, tr, td, th{
+        border : 1px solid black;
+        border-collapse: collapse;
+        padding : 5px 10px;
+        text-align: center;
+    }
+</style>
 <body>
-    <div id="app">
-        <div>제품번호 : {{Info.productId}}</div>
-        <div>제품명 : {{Info.productName}}</div>
-        <div>제품설명 : {{Info.description}}</div>
-        <div>가격 : {{Info.price}}</div>
-        <div>재고 : {{Info.stock}}</div>
-        <div>종류 : {{Info.category}}</div>
-
-    </div>
+	<div id="app">
+		<div>제품명 : {{info.productName}}</div>
+        <div>제품설명 : {{info.description}}</div>
+        <div v-for="img in info.images">
+            <img :src="'http://localhost:3000/' + img.filePath">
+        </div>
+	</div>
 </body>
-
 </html>
 <script>
-
     const app = Vue.createApp({
         data() {
             return {
-                Info: {},
-                productId: ''
+                info : {},
+                productId : ""
             };
         },
         methods: {
-            fnGetInfo() {
+            fnGetInfo(){
                 let self = this;
-                fetch('http://localhost:3000/product/' + self.productId)
-                    // fetch('http://localhost:3000/board/view?boardNo='+boardNo)
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log(data);
-                        self.Info = data.Info;
-                        console.log(self.Info);
-                    })
-                    .catch(error => {
-                        console.error('에러 발생:', error);
-                    });
-            },
+				fetch("http://localhost:3000/product/"+self.productId)
+                    .then( res => res.json() )
+                    .then( data => {
+                        self.info = data.info;
+                        console.log(data.info);
+                    } )
+            }
         },
         mounted() {
             var self = this;
-            const urlParams = new URLSearchParams(window.location.search);
-            self.productId = urlParams.get("productId");
+            const queryParams = new URLSearchParams(window.location.search);
+            this.productId = queryParams.get('productId') || ''; 
             self.fnGetInfo();
-
         }
     });
-
     app.mount('#app');
-
-
 </script>
