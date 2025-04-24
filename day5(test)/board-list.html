@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        #app{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        table, tr, td, th{
+            border : 1px solid black;
+            border-collapse: collapse;
+            padding : 5px 10px;
+            text-align: center;
+        }
+        a {
+            cursor: pointer;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+	<div id="app">
+        <a href="board-edit.html"><button>글쓰기</button></a>
+        <button @click="changeFlg">
+            <template v-if="!hotFlg">인기게시글</template>
+            <template v-else>전체게시글</template>
+        </button>
+
+		<table>
+            <tr>
+                <th>제목</th>
+                <th>이름</th>
+                <th>조회수</th>
+                <th>작성일</th>
+            </tr>
+            <tr v-for="item in list">
+                <td>
+                    <a href="javascript:;" @click="fnView(item.boardNo)">
+                        {{item.title}}
+                    </a>
+                </td>
+                <td>{{item.userName}}</td>
+                <td>{{item.cnt}}</td>
+                <td>{{item.cdatetime}}</td>
+            </tr>
+        </table>
+        
+	</div>
+</body>
+</html>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                list : [],
+                hotFlg: false
+            };
+        },
+        methods: {
+            fnGetList(){
+                let self = this;                
+				fetch("http://localhost:3000/board?hotFlg="+self.hotFlg)
+                    .then( res => res.json() )
+                    .then( data => {
+                        self.list = data.list;
+                    } )
+            },
+            fnView(boardNo){
+                location.href="board-view.html?boardNo="+boardNo;
+            },
+            changeFlg(){
+                let self = this;
+                self.hotFlg = !self.hotFlg;
+                self.fnGetList();
+            }
+        },
+        mounted() {
+            var self = this;
+            self.fnGetList();            
+        }
+    });
+    app.mount('#app');
+</script>
